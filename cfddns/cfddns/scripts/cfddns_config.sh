@@ -37,19 +37,21 @@ update_record() {
 }
 
 get_info(){
-	get_type="A"
-	cfddns_result=`get_record_response`
-	if [ $(echo $cfddns_result | grep -c "\"success\":true") -gt 0 ];then
-		# CFDDNS的A记录ID
-		cfddns_id=`echo $cfddns_result | awk -F"","" '{print $1}' | sed 's/{.*://g' | sed 's/\"//g'`
-		# CFDDNS的A记录IP
-		current_ip=`echo $cfddns_result | awk -F"","" '{print $4}' | grep -oE '([0-9]{1,3}\.?){4}'`
-		echo_date CloudFlare IP为 $current_ip
-	else
-		dbus set cfddns_status="【$LOGTIME】：获取IPV4解析记录错误！"
-		exit 1
-	fi
-	
+  while true; do
+    cfddns_result=`get_record_response`
+    if [ $(echo $cfddns_result | grep -c "\"success\":true") -gt 0 ];then
+      # CFDDNS的A记录ID
+      cfddns_id=`echo $cfddns_result | awk -F"","" '{print $1}' | sed 's/{.*://g' | sed 's/\"//g'`
+      # CFDDNS的A记录IP
+      current_ip=`echo $cfddns_result | awk -F"","" '{print $6}' | grep -oE '([0-9]{1,3}\.?){4}'`
+      echo_date CloudFlare IP为 $current_ip
+      break
+    else
+      dbus set cfddns_status="【$LOGTIME】：获取IPV4解析记录错误！等待10秒重新获取"
+      sleep 10
+    fi
+  done
+
 	localip=`$cfddns_method 2>&1`
 	if [ $(echo $localip | grep -c "^[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}$") -gt 0 ];then 
 		echo_date 本地IP为 $localip
