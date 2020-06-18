@@ -52,13 +52,16 @@ get_info(){
     fi
   done
 
-	localip=`$cfddns_method 2>&1`
-	if [ $(echo $localip | grep -c "^[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}$") -gt 0 ];then 
-		echo_date 本地IP为 $localip
-	else
-		dbus set cfddns_status="【$LOGTIME】：获取本地IP错误！"
-		exit 1
-	fi
+  while true; do
+    localip=`$cfddns_method 2>&1`
+    if [ $(echo $localip | grep -c "^[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}$") -gt 0 ];then 
+      echo_date 本地IP为 $localip
+      break
+    else
+      dbus set cfddns_status="【$LOGTIME】：获取本地IP错误！"
+      sleep 5
+    fi
+  done
 }
 
 get_local_ipv6(){
