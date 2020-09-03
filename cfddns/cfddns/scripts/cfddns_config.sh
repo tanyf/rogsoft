@@ -91,14 +91,17 @@ get_info_ipv6(){
 }
 
 update_ip(){
-	update_result=`update_record`
-	if [ $(echo $update_result | grep -c "\"success\":true") -gt 0 ];then 
-		echo_date 更新成功！
-	else
-		echo_date 更新失败!请检查设置！
-		echo $update_result
-		exit 1
-	fi
+  while true; do
+	  update_result=`update_record`
+	  if [ $(echo $update_result | grep -c "\"success\":true") -gt 0 ];then 
+		  echo_date 更新成功！
+      break
+	  else
+		  echo_date 更新失败!请检查设置！
+		  echo $update_result
+		  sleep 5
+	  fi
+  done
 }
 
 check_update(){
